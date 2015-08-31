@@ -1,0 +1,7 @@
+.vagrant
+.DS_Store
+
+# Wordpress files
+src/*
+# Ignore the wordpress directory readme file
+!src/Readme.md
