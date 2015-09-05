@@ -1,0 +1,118 @@
+---
+# tasks file for wordpress
+
+# epel
+
+- name: Install EPEL repo
+  yum: name=epel-release state=installed
+
+# git
+
+- name: Install git
+  yum: name=git state=installed
+
+# firewall
+
+- name: Ensure firewall allows httpd and mysql ports.
+  command: firewall-cmd --permanent --zone=public --add-port={{ item.port }}/tcp
+  with_items:
+    - { name: 'httpd', port: '80'}
+    - { name: 'mysqld', port: '3306'}
+  notify: restart firewall
+
+# mysql
+
+- name: Install MySQL repo
+  yum: name=http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm state=installed
+
+- name: Install MySQL-python
+  yum: name=MySQL-python state=installed
+
+- name: Install mysql server
+  yum: name=mysql-server state=installed
+
+- name: Start Mysql service
+  service: name=mysqld state=started enabled=yes
+
+- name: Setup empty database for WordPress
+  mysql_db:
+    name: "wordpress"
+    encoding: "utf8"
+    collation: "utf8_unicode_ci"
+    state: "present"
+    login_user: "root"
+    login_password: ""
+
+- name: Setup MySQL user for WordPress
+  mysql_user:
+    name: "user_wp"
+    password: "wordpress"
+    host: "localhost"
+    priv: "wordpress.*:ALL"
+    state: "present"
+
+# apache
+
+- name: Install Apache.
+  yum: name=httpd state=installed
+
+- name: Ensure apache is running
+  service: name=httpd state=started enabled=yes
+
+- name: Configure virtualhosts directory
+  file: dest=/var/www/sites owner=vagrant group=vagrant state=directory
+  notify: restart apache
+
+# php
+
+- name: Install php
+  yum: name={{ item }} state=installed
+  with_items:
+    - php
+    - php-mysql
+    - php-curl
+    - php-gd
+    - php-fpm
+    - php-cli
+
+- name: Load apache custom config
+  copy: dest=/etc/httpd/conf.d/httpd.conf src=../../files/development/apache/conf.d/httpd.conf owner=root group=root
+  notify: restart apache
+
+- name: Load apache virtualhost
+  copy: dest=/etc/httpd/conf.d/1-www.opspress.dev.conf src=../../files/development/apache/conf.d/1-www.opspress.dev.conf owner=root group=root
+  notify: restart apache
+
+# WordPress
+
+- name: Create Application Database
+  mysql_db: name={{ dbname }} state=present
+
+- name: Create Application DB User
+  mysql_user: name={{ dbuser }} password={{ upassword }} priv=*.*:ALL host='%' state=present
+
+# WPCLI
+
+- name: Install WPCLI
+  get_url: url=https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar dest=/usr/local/bin/wp owner=root group=root mode=755
+
+- name: Check WordPress config
+  stat: path=/var/app/current/wp-config.php
+  register: wpconfig
+
+- name: Download WordPress
+  command: /usr/local/bin/wp core download --locale=en_GB --path=/var/app/current --force
+  when: wpconfig.stat.exists == False
+
+- name: Configure WordPress
+  command: /usr/local/bin/wp core config --dbname=wordpress --dbuser=root --locale=en_GB --path=/var/app/current
+  when: wpconfig.stat.exists == False
+
+- name: Setup WordPress config
+  command: /usr/local/bin/wp
+  when: wpconfig.stat.exists == False
+  ignore_errors: true
+
+- name: Configure WordPress virtualhost
+  file: src=/var/app/current dest=/var/www/sites/wordpress owner=vagrant group=vagrant state=link force=yes
+  notify: restart apache
