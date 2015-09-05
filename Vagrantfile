@@ -9,12 +9,12 @@ Vagrant.configure(2) do |config|
   config.vm.provision :shell, path: "files/scripts/setup.sh"
 
   # Configure hostnames using the hostupdater plugin
-  config.vm.hostname = "www.opspress.dev"
+  config.vm.hostname = "opspress.dev"
   config.vm.network :private_network, :ip => "192.168.50.10", :auto_config => true
   #config.vm.network "forwarded_port", guest: 80, host: 8080
 
-  #config.hostsupdater.aliases = %w{www.opspress.dev}
-  #config.hostsupdater.remove_on_suspend = true
+  config.hostsupdater.aliases = %w{www.opspress.dev}
+  config.hostsupdater.remove_on_suspend = true
 
   config.vm.synced_folder "src/", "/var/app/current"
 
