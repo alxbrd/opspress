@@ -21,6 +21,7 @@ Wordpress is installed using WP-CLI.
 
     `vagrant up`
 
+  - Visit `www.opspress.dev` and proceed with the wordpress installation process.
 
 ### To do
   - Use Hiera configs for Puppet
