@@ -12,9 +12,16 @@ Wordpress is installed using WP-CLI.
 
   - Ensure you have vagrant installed. http://www.vagrantup.com
   - Ensure you have vagrant host updater plugin installed:
+
     `vagrant plugin install vagrant-hostupdater`
+
   - For the ansible provisioner, install Ansible
-  
+  - Clone this repository
+  - Run
+
+    `vagrant up`
+
+
 ### To do
   - Use Hiera configs for Puppet
   - Abstract variables for Ansible
