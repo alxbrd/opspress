@@ -31,6 +31,17 @@ Vagrant.configure(2) do |config|
     }
   end
 
+  ## Provision the server with
+  #config.vm.provision :puppet do |puppet|
+  #  # puppet.manifests_path = "puppet/manifests"
+  #  puppet.module_path = "puppet/modules"
+  #  puppet.manifests_path = "puppet/manifests"
+  #  puppet.manifest_file  = "init.pp"
+  #  puppet.options="--verbose --debug"
+  #  puppet.environment_path="files"
+  #  puppet.environment="development"
+  #end
+
   config.vm.provider :virtualbox do |vb|
     vb.customize ['modifyvm', :id, '--natdnshostresolver1', 'on']
     vb.customize ['modifyvm', :id, '--natdnsproxy1', 'on']
