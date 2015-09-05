@@ -1,0 +1,7 @@
+---
+- hosts: default
+  remote_user: vagrant
+  sudo: yes
+  roles:
+    - role: ansible-pip
+    - role: wordpress
